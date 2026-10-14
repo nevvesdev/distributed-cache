@@ -48,7 +48,7 @@ domain → application → adapter (in/out) → infrastructure
 
 ### Roadmap
 - [x] Fase 0: scaffold, Redis local, CI
-- [ ] Fase 1: domínio
+- [x] Fase 1: domínio
 - [ ] Fase 2: casos de uso e ports
 - [ ] Fase 3: persistência (PostgreSQL + Flyway)
 - [ ] Fase 4: API REST
