@@ -14,5 +14,24 @@ services:
       retries: 10
     restart: unless-stopped
 
+  postgres:
+    image: postgres:17-alpine
+    container_name: distributed-cache-postgres
+    environment:
+      POSTGRES_DB: distributed_cache
+      POSTGRES_USER: dcache
+      POSTGRES_PASSWORD: dcache
+    ports:
+      - "5432:5432"
+    volumes:
+      - distributed-cache-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dcache -d distributed_cache"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    restart: unless-stopped
+
 volumes:
   distributed-cache-redis-data:
+  distributed-cache-postgres-data:
