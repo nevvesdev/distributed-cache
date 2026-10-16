@@ -15,8 +15,9 @@ O **distributed-cache** expõe uma API para consultar saldo e limite de contas. 
 - Java 21
 - Spring Boot 4.0.8
 - Redis 7.4
-- Maven
 - Docker Compose
+- PostgreSQL 17
+- Flyway
 
 ### Pré-requisitos
 - JDK 21
@@ -50,7 +51,7 @@ domain → application → adapter (in/out) → infrastructure
 - [x] Fase 0: scaffold, Redis local, CI
 - [x] Fase 1: domínio
 - [x] Fase 2: casos de uso e ports
-- [ ] Fase 3: persistência (PostgreSQL + Flyway)
+- [x] Fase 3: persistência (PostgreSQL + Flyway)
 - [ ] Fase 4: API REST
 - [ ] Fase 5: Cache-Aside com Redis
 - [ ] Fase 6: TTL, invalidação e resiliência
