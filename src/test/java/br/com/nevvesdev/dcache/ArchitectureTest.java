@@ -48,4 +48,31 @@ class ArchitectureTest {
             .resideInAnyPackage("org.springframework..", "jakarta..", "com.fasterxml..", "tools.jackson..")
             .check(CLASSES);
     }
+
+    @Test
+    void inboundAdaptersShouldNotDependOnOutboundAdapters() {
+        noClasses()
+            .that().resideInAPackage("..adapter.in..")
+            .should().dependOnClassesThat()
+            .resideInAPackage("..adapter.out..")
+            .check(CLASSES);
+    }
+
+    @Test
+    void outboundAdaptersShouldNotDependOnInboundAdapters() {
+        noClasses()
+            .that().resideInAPackage("..adapter.out..")
+            .should().dependOnClassesThat()
+            .resideInAPackage("..adapter.in..")
+            .check(CLASSES);
+    }
+
+    @Test
+    void inboundAdaptersShouldOnlyUseInboundPorts() {
+        noClasses()
+            .that().resideInAPackage("..adapter.in..")
+            .should().dependOnClassesThat()
+            .resideInAPackage("..application.port.out..")
+            .check(CLASSES);
+    }
 }
