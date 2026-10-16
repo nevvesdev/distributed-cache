@@ -1,4 +1,8 @@
 package br.com.nevvesdev.dcache.adapter.out.persistence;
 
-public class AccountJpaRepository {
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.util.UUID;
+
+public interface AccountJpaRepository extends JpaRepository<AccountJpaEntity, UUID> {
 }
