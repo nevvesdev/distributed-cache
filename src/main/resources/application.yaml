@@ -17,8 +17,8 @@ spring:
     redis:
       host: ${REDIS_HOST:localhost}
       port: ${REDIS_PORT:6379}
-      timeout: 2s
-      connect-timeout: 2s
+      timeout: 500ms
+      connect-timeout: 500ms
 
 server:
   port: ${SERVER_PORT:8080}
@@ -47,3 +47,7 @@ dcache:
   cache:
     enabled: true
     ttl: 5m
+    ttl-jitter: 0.1
+    resilience:
+      failure-threshold: 3
+      open-duration: 30s
