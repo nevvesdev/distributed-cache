@@ -1,5 +1,6 @@
 package br.com.nevvesdev.dcache.adapter.out.cache;
 
+import br.com.nevvesdev.dcache.application.exception.CacheUnavailableException;
 import br.com.nevvesdev.dcache.application.port.out.AccountCache;
 import br.com.nevvesdev.dcache.domain.model.Account;
 import br.com.nevvesdev.dcache.domain.model.AccountId;
@@ -56,6 +57,18 @@ public class FailSafeAccountCache implements AccountCache {
         } catch (RuntimeException exception) {
             circuitBreaker.recordFailure();
             log.warn("Cache write failed for account {}; continuing without caching", account.id(), exception);
+        }
+    }
+
+    @Override
+    public void evict(AccountId id) {
+        Preconditions.requireNonNull(id, "id");
+        try {
+            delegate.evict(id);
+            circuitBreaker.recordSuccess();
+        } catch (RuntimeException exception) {
+            circuitBreaker.recordFailure();
+            throw new CacheUnavailableException("Could not evict account " + id + " from the cache", exception);
         }
     }
 }

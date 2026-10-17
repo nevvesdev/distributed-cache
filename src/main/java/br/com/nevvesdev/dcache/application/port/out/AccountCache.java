@@ -10,4 +10,6 @@ public interface AccountCache {
     Optional<Account> find(AccountId id);
 
     void put(Account account);
+
+    void evict(AccountId id);
 }

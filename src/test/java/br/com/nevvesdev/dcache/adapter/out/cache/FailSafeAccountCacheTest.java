@@ -119,6 +119,21 @@ class FailSafeAccountCacheTest {
             return putCalls;
         }
 
+        private int evictCalls;
+
+        int evictCalls() {
+            return evictCalls;
+        }
+
+        @Override
+        public void evict(AccountId id) {
+            evictCalls++;
+            if (failing) {
+                throw new IllegalStateException("redis unavailable");
+            }
+            entries.remove(id);
+        }
+
         @Override
         public Optional<Account> find(AccountId id) {
             findCalls++;

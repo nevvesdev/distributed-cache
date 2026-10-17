@@ -16,4 +16,8 @@ public class NoOpAccountCache implements AccountCache {
     @Override
     public void put(Account account) {
     }
+
+    @Override
+    public void evict(AccountId id) {
+    }
 }

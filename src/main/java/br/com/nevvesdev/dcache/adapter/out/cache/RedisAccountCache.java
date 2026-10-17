@@ -43,6 +43,12 @@ public class RedisAccountCache implements AccountCache {
         redisTemplate.opsForValue().set(keyOf(account.id()), json, ttlPolicy.next());
     }
 
+    @Override
+    public void evict(AccountId id) {
+        Preconditions.requireNonNull(id, "id");
+        redisTemplate.delete(keyOf(id));
+    }
+
     private Optional<Account> deserialize(String key, String json) {
         try {
             return Optional.of(MAPPER.readValue(json, CachedAccount.class).toDomain());

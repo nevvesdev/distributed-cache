@@ -138,5 +138,10 @@ class GetAccountSummaryServiceTest {
             putCalls++;
             entries.put(account.id(), account);
         }
+
+        @Override
+        public void evict(AccountId id) {
+            entries.remove(id);
+        }
     }
 }
