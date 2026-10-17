@@ -62,6 +62,16 @@ Retorna saldo, limite contratado, limite utilizado, limite disponível e total d
 
 Os erros seguem o padrão RFC 9457 (`application/problem+json`).
 
+`DELETE /api/v1/accounts/{accountId}/cache`
+
+Remove a entrada da conta do cache. A próxima consulta busca o dado atualizado no banco.
+
+| Status | Situação |
+|---|---|
+| 204 | Entrada removida (ou inexistente) |
+| 400 | `accountId` não é um UUID válido |
+| 503 | Redis indisponível: a invalidação não pôde ser feita |
+
 ### Executando com dados de exemplo
 
 ```bash
@@ -81,7 +91,9 @@ Leituras passam por Redis com o padrão Cache-Aside. As chaves são versionadas 
 | `dcache.cache.ttl-jitter` | `0.1` | Fração máxima somada ao TTL, de 0 a 1 |
 | `dcache.cache.resilience.failure-threshold` | `3` | Falhas seguidas até o Redis ser ignorado |
 | `dcache.cache.resilience.open-duration` | `30s` | Tempo em que o Redis fica ignorado antes de uma nova tentativa |
+
 Se o Redis ficar indisponível, a API continua respondendo a partir do PostgreSQL.
+Leituras simultâneas da mesma conta que dão *miss* compartilham uma única consulta ao banco (proteção contra cache stampede, por instância da aplicação).
 
 Exemplo para rodar sem cache:
 
@@ -97,6 +109,6 @@ Exemplo para rodar sem cache:
 - [x] Fase 4: API REST
 - [x] Fase 5: Cache-Aside com Redis
 - [x] Fase 6: TTL, invalidação e resiliência
-- [ ] Fase 7: observabilidade
+- [x] Fase 7: observabilidade
 - [ ] Fase 8: testes de integração (Testcontainers)
 - [ ] Fase 9: Docker e documentação final
