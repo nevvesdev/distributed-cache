@@ -5,6 +5,7 @@ import br.com.nevvesdev.dcache.domain.model.AccountId;
 import br.com.nevvesdev.dcache.domain.model.Balance;
 import br.com.nevvesdev.dcache.domain.model.CreditLimit;
 import org.junit.jupiter.api.Test;
+import static org.assertj.core.api.Assertions.assertThatCode;
 
 import java.time.Instant;
 
@@ -22,5 +23,10 @@ class NoOpAccountCacheTest {
         cache.put(account);
 
         assertThat(cache.find(account.id())).isEmpty();
+    }
+
+    @Test
+    void shouldIgnoreEviction() {
+        assertThatCode(() -> cache.evict(AccountId.generate())).doesNotThrowAnyException();
     }
 }

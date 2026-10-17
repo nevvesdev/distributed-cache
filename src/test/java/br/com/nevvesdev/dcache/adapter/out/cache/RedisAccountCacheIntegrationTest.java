@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import static org.assertj.core.api.Assertions.assertThatCode;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -115,5 +116,22 @@ class RedisAccountCacheIntegrationTest {
         assertThatThrownBy(() -> cache.put(null)).isInstanceOf(InvalidValueException.class);
         assertThatThrownBy(() -> new RedisAccountCache(null, TtlPolicy.fixed(TTL))).isInstanceOf(InvalidValueException.class);
         assertThatThrownBy(() -> new RedisAccountCache(redisTemplate, null)).isInstanceOf(InvalidValueException.class);
+        assertThatThrownBy(() -> cache.evict(null)).isInstanceOf(InvalidValueException.class);
+    }
+
+    @Test
+    void shouldEvictEntry() {
+        Account account = anAccount(AccountId.generate(), "150.00");
+        cache.put(account);
+
+        cache.evict(account.id());
+
+        assertThat(redisTemplate.hasKey(keyOf(account.id()))).isFalse();
+        assertThat(cache.find(account.id())).isEmpty();
+    }
+
+    @Test
+    void shouldIgnoreEvictionOfMissingEntry() {
+        assertThatCode(() -> cache.evict(AccountId.generate())).doesNotThrowAnyException();
     }
 }

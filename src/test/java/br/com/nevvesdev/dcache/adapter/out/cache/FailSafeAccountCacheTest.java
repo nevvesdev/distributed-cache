@@ -6,6 +6,7 @@ import br.com.nevvesdev.dcache.domain.model.Account;
 import br.com.nevvesdev.dcache.domain.model.AccountId;
 import br.com.nevvesdev.dcache.domain.model.Balance;
 import br.com.nevvesdev.dcache.domain.model.CreditLimit;
+import br.com.nevvesdev.dcache.application.exception.CacheUnavailableException;
 import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
@@ -90,6 +91,46 @@ class FailSafeAccountCacheTest {
         assertThatThrownBy(() -> cache.find(null)).isInstanceOf(InvalidValueException.class);
         assertThatThrownBy(() -> cache.put(null)).isInstanceOf(InvalidValueException.class);
         assertThatThrownBy(() -> new FailSafeAccountCache(null, 2, OPEN_DURATION)).isInstanceOf(InvalidValueException.class);
+    }
+
+    @Test
+    void shouldDelegateEviction() {
+        Account account = anAccount();
+        cache.put(account);
+
+        cache.evict(account.id());
+
+        assertThat(cache.find(account.id())).isEmpty();
+        assertThat(delegate.evictCalls()).isEqualTo(1);
+    }
+
+    @Test
+    void shouldReportEvictionFailureInsteadOfHidingIt() {
+        delegate.fail();
+
+        assertThatThrownBy(() -> cache.evict(AccountId.generate()))
+            .isInstanceOf(CacheUnavailableException.class)
+            .hasCauseInstanceOf(IllegalStateException.class);
+    }
+
+    @Test
+    void shouldAttemptEvictionEvenWhileCircuitIsOpen() {
+        AccountId id = AccountId.generate();
+        delegate.fail();
+        cache.find(id);
+        cache.find(id);
+        delegate.recover();
+
+        cache.evict(id);
+
+        assertThat(delegate.evictCalls()).isEqualTo(1);
+        assertThat(cache.find(id)).isEmpty();
+        assertThat(delegate.findCalls()).isEqualTo(3);
+    }
+
+    @Test
+    void shouldRejectNullIdOnEviction() {
+        assertThatThrownBy(() -> cache.evict(null)).isInstanceOf(InvalidValueException.class);
     }
 
     private static final class ScriptedCache implements AccountCache {
