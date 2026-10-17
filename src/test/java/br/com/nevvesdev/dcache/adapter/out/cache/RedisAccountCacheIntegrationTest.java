@@ -31,7 +31,7 @@ class RedisAccountCacheIntegrationTest {
     @Autowired
     RedisAccountCacheIntegrationTest(StringRedisTemplate redisTemplate) {
         this.redisTemplate = redisTemplate;
-        this.cache = new RedisAccountCache(redisTemplate, TTL);
+        this.cache = new RedisAccountCache(redisTemplate, TtlPolicy.fixed(TTL));
     }
 
     private static Account anAccount(AccountId id, String balance) {
@@ -68,6 +68,18 @@ class RedisAccountCacheIntegrationTest {
     }
 
     @Test
+    void shouldApplyJitterToTtl() {
+        RedisAccountCache jitteredCache = new RedisAccountCache(redisTemplate, new TtlPolicy(TTL, 0.2, () -> 1.0));
+        Account account = anAccount(AccountId.generate(), "150.00");
+
+        jitteredCache.put(account);
+
+        assertThat(redisTemplate.getExpire(keyOf(account.id())))
+            .isNotNull()
+            .isBetween(TTL.toSeconds() + 1, TTL.toSeconds() * 6 / 5);
+    }
+
+    @Test
     void shouldOverwriteExistingEntry() {
         AccountId id = AccountId.generate();
         cache.put(anAccount(id, "100.00"));
@@ -101,7 +113,7 @@ class RedisAccountCacheIntegrationTest {
     void shouldRejectNullArguments() {
         assertThatThrownBy(() -> cache.find(null)).isInstanceOf(InvalidValueException.class);
         assertThatThrownBy(() -> cache.put(null)).isInstanceOf(InvalidValueException.class);
-        assertThatThrownBy(() -> new RedisAccountCache(null, TTL)).isInstanceOf(InvalidValueException.class);
+        assertThatThrownBy(() -> new RedisAccountCache(null, TtlPolicy.fixed(TTL))).isInstanceOf(InvalidValueException.class);
         assertThatThrownBy(() -> new RedisAccountCache(redisTemplate, null)).isInstanceOf(InvalidValueException.class);
     }
 }

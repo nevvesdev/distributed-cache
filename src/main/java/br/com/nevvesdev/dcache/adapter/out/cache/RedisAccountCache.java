@@ -9,7 +9,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import tools.jackson.databind.json.JsonMapper;
 
-import java.time.Duration;
 import java.util.Optional;
 
 public class RedisAccountCache implements AccountCache {
@@ -19,11 +18,11 @@ public class RedisAccountCache implements AccountCache {
     private static final JsonMapper MAPPER = JsonMapper.builder().build();
 
     private final StringRedisTemplate redisTemplate;
-    private final Duration ttl;
+    private final TtlPolicy ttlPolicy;
 
-    public RedisAccountCache(StringRedisTemplate redisTemplate, Duration ttl) {
+    public RedisAccountCache(StringRedisTemplate redisTemplate, TtlPolicy ttlPolicy) {
         this.redisTemplate = Preconditions.requireNonNull(redisTemplate, "redisTemplate");
-        this.ttl = Preconditions.requireNonNull(ttl, "ttl");
+        this.ttlPolicy = Preconditions.requireNonNull(ttlPolicy, "ttlPolicy");
     }
 
     @Override
@@ -41,7 +40,7 @@ public class RedisAccountCache implements AccountCache {
     public void put(Account account) {
         Preconditions.requireNonNull(account, "account");
         String json = MAPPER.writeValueAsString(CachedAccount.from(account));
-        redisTemplate.opsForValue().set(keyOf(account.id()), json, ttl);
+        redisTemplate.opsForValue().set(keyOf(account.id()), json, ttlPolicy.next());
     }
 
     private Optional<Account> deserialize(String key, String json) {
