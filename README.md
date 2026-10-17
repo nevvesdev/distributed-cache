@@ -78,6 +78,10 @@ Leituras passam por Redis com o padrão Cache-Aside. As chaves são versionadas 
 |---|---|---|
 | `dcache.cache.enabled` | `true` | Desativa o cache quando `false` |
 | `dcache.cache.ttl` | `5m` | Tempo de vida de cada entrada |
+| `dcache.cache.ttl-jitter` | `0.1` | Fração máxima somada ao TTL, de 0 a 1 |
+| `dcache.cache.resilience.failure-threshold` | `3` | Falhas seguidas até o Redis ser ignorado |
+| `dcache.cache.resilience.open-duration` | `30s` | Tempo em que o Redis fica ignorado antes de uma nova tentativa |
+Se o Redis ficar indisponível, a API continua respondendo a partir do PostgreSQL.
 
 Exemplo para rodar sem cache:
 
@@ -92,7 +96,7 @@ Exemplo para rodar sem cache:
 - [x] Fase 3: persistência (PostgreSQL + Flyway)
 - [x] Fase 4: API REST
 - [x] Fase 5: Cache-Aside com Redis
-- [ ] Fase 6: TTL, invalidação e resiliência
+- [x] Fase 6: TTL, invalidação e resiliência
 - [ ] Fase 7: observabilidade
 - [ ] Fase 8: testes de integração (Testcontainers)
 - [ ] Fase 9: Docker e documentação final
