@@ -1,11 +1,12 @@
 package br.com.nevvesdev.dcache.adapter.in.web;
 
+import br.com.nevvesdev.dcache.application.exception.CacheUnavailableException;
 import br.com.nevvesdev.dcache.application.port.in.AccountSummary;
+import br.com.nevvesdev.dcache.application.port.in.EvictAccountCacheUseCase;
 import br.com.nevvesdev.dcache.application.port.in.GetAccountSummaryUseCase;
 import br.com.nevvesdev.dcache.domain.model.AccountId;
 import br.com.nevvesdev.dcache.domain.model.AccountNotFoundException;
 import br.com.nevvesdev.dcache.domain.model.Money;
-import br.com.nevvesdev.dcache.application.port.in.EvictAccountCacheUseCase;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
@@ -15,8 +16,11 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.Instant;
 
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -27,6 +31,7 @@ class AccountControllerTest {
 
     private static final String ACCOUNT_ID = "3f2b8c1e-9a4d-4e7b-8c55-1d2e3f4a5b6c";
     private static final String SUMMARY_URL = "/api/v1/accounts/{accountId}/summary";
+    private static final String CACHE_URL = "/api/v1/accounts/{accountId}/cache";
     private static final Instant UPDATED_AT = Instant.parse("2026-10-14T12:00:00Z");
 
     @Autowired
@@ -94,5 +99,34 @@ class AccountControllerTest {
             .andExpect(jsonPath("$.status").value(500))
             .andExpect(jsonPath("$.title").value("Internal server error"))
             .andExpect(jsonPath("$.detail").value("Unexpected error"));
+    }
+
+    @Test
+    void shouldEvictCacheAndReturnNoContent() throws Exception {
+        mockMvc.perform(delete(CACHE_URL, ACCOUNT_ID))
+            .andExpect(status().isNoContent());
+
+        verify(evictAccountCache).execute(AccountId.of(ACCOUNT_ID));
+    }
+
+    @Test
+    void shouldReturnBadRequestWhenEvictingWithInvalidAccountId() throws Exception {
+        mockMvc.perform(delete(CACHE_URL, "not-a-uuid"))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.title").value("Invalid request"));
+
+        verifyNoInteractions(evictAccountCache);
+    }
+
+    @Test
+    void shouldReturnServiceUnavailableWhenCacheCannotBeEvicted() throws Exception {
+        doThrow(new CacheUnavailableException("cache down", new IllegalStateException("redis")))
+            .when(evictAccountCache).execute(AccountId.of(ACCOUNT_ID));
+
+        mockMvc.perform(delete(CACHE_URL, ACCOUNT_ID))
+            .andExpect(status().isServiceUnavailable())
+            .andExpect(jsonPath("$.status").value(503))
+            .andExpect(jsonPath("$.title").value("Cache unavailable"))
+            .andExpect(jsonPath("$.detail").value("Cache is unavailable"));
     }
 }
