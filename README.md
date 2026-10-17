@@ -70,13 +70,28 @@ docker-compose up -d
 curl http://localhost:8080/api/v1/accounts/22222222-2222-2222-2222-222222222222/summary
 ```
 
+### Cache
+
+Leituras passam por Redis com o padrão Cache-Aside. As chaves são versionadas (`dcache:account:v1:{accountId}`) e expiram após o TTL configurado.
+
+| Propriedade | Padrão | Descrição |
+|---|---|---|
+| `dcache.cache.enabled` | `true` | Desativa o cache quando `false` |
+| `dcache.cache.ttl` | `5m` | Tempo de vida de cada entrada |
+
+Exemplo para rodar sem cache:
+
+```bash
+./mvnw spring-boot:run -Dspring-boot.run.profiles=local -Dspring-boot.run.arguments=--dcache.cache.enabled=false
+```
+
 ### Roadmap
 - [x] Fase 0: scaffold, Redis local, CI
 - [x] Fase 1: domínio
 - [x] Fase 2: casos de uso e ports
 - [x] Fase 3: persistência (PostgreSQL + Flyway)
 - [x] Fase 4: API REST
-- [ ] Fase 5: Cache-Aside com Redis
+- [x] Fase 5: Cache-Aside com Redis
 - [ ] Fase 6: TTL, invalidação e resiliência
 - [ ] Fase 7: observabilidade
 - [ ] Fase 8: testes de integração (Testcontainers)
