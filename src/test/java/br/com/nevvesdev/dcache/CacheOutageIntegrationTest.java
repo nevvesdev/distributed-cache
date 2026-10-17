@@ -8,6 +8,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.web.servlet.MockMvc;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -55,5 +56,12 @@ class CacheOutageIntegrationTest {
     void shouldStillReturnNotFoundForUnknownAccountWhileRedisIsUnavailable() throws Exception {
         mockMvc.perform(get(SUMMARY_URL, UUID.randomUUID()))
             .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void shouldReportServiceUnavailableWhenEvictionCannotReachRedis() throws Exception {
+        mockMvc.perform(delete("/api/v1/accounts/{accountId}/cache", UUID.randomUUID()))
+            .andExpect(status().isServiceUnavailable())
+            .andExpect(jsonPath("$.title").value("Cache unavailable"));
     }
 }
