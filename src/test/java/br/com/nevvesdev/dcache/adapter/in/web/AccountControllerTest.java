@@ -5,6 +5,7 @@ import br.com.nevvesdev.dcache.application.port.in.GetAccountSummaryUseCase;
 import br.com.nevvesdev.dcache.domain.model.AccountId;
 import br.com.nevvesdev.dcache.domain.model.AccountNotFoundException;
 import br.com.nevvesdev.dcache.domain.model.Money;
+import br.com.nevvesdev.dcache.application.port.in.EvictAccountCacheUseCase;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
@@ -33,6 +34,9 @@ class AccountControllerTest {
 
     @MockitoBean
     private GetAccountSummaryUseCase getAccountSummary;
+
+    @MockitoBean
+    private EvictAccountCacheUseCase evictAccountCache;
 
     @Test
     void shouldReturnSummaryWhenAccountExists() throws Exception {

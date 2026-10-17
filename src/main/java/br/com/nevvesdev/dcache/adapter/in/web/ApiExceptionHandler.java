@@ -1,5 +1,6 @@
 package br.com.nevvesdev.dcache.adapter.in.web;
 
+import br.com.nevvesdev.dcache.application.exception.CacheUnavailableException;
 import br.com.nevvesdev.dcache.domain.exception.InvalidValueException;
 import br.com.nevvesdev.dcache.domain.model.AccountNotFoundException;
 import org.slf4j.Logger;
@@ -26,6 +27,14 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
     ProblemDetail handleInvalidValue(InvalidValueException exception) {
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, exception.getMessage());
         problem.setTitle("Invalid request");
+        return problem;
+    }
+
+    @ExceptionHandler(CacheUnavailableException.class)
+    ProblemDetail handleCacheUnavailable(CacheUnavailableException exception) {
+        log.error("Cache operation failed", exception);
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.SERVICE_UNAVAILABLE, "Cache is unavailable");
+        problem.setTitle("Cache unavailable");
         return problem;
     }
 
