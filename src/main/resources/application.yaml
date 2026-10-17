@@ -42,3 +42,8 @@ info:
   app:
     name: distributed-cache
     description: Serviço de consulta de saldo e limite com cache distribuído Redis (Cache-Aside)
+
+dcache:
+  cache:
+    enabled: true
+    ttl: 5m
