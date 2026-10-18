@@ -27,7 +27,7 @@ class ArchitectureTest {
         noClasses()
             .that().resideInAPackage("..domain..")
             .should().dependOnClassesThat()
-            .resideInAnyPackage("org.springframework..", "jakarta..", "com.fasterxml..", "tools.jackson..")
+            .resideInAnyPackage("org.springframework..", "jakarta..", "com.fasterxml..", "tools.jackson..", "io.micrometer..")
             .check(CLASSES);
     }
 
@@ -45,7 +45,7 @@ class ArchitectureTest {
         noClasses()
             .that().resideInAPackage("..application..")
             .should().dependOnClassesThat()
-            .resideInAnyPackage("org.springframework..", "jakarta..", "com.fasterxml..", "tools.jackson..")
+            .resideInAnyPackage("org.springframework..", "jakarta..", "com.fasterxml..", "tools.jackson..", "io.micrometer..")
             .check(CLASSES);
     }
 
