@@ -49,4 +49,8 @@ final class CacheCircuitBreaker {
             openUntil.set(clock.millis() + openMillis);
         }
     }
+
+    boolean isOpen() {
+        return openUntil.get() != 0;
+    }
 }

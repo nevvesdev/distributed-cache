@@ -71,4 +71,8 @@ public class FailSafeAccountCache implements AccountCache {
             throw new CacheUnavailableException("Could not evict account " + id + " from the cache", exception);
         }
     }
+
+    public boolean isCircuitOpen() {
+        return circuitBreaker.isOpen();
+    }
 }
