@@ -92,4 +92,19 @@ class CacheCircuitBreakerTest {
         assertThatThrownBy(() -> new CacheCircuitBreaker(3, null, clock))
             .isInstanceOf(IllegalArgumentException.class);
     }
+
+    @Test
+    void shouldReportOpenStateWhileOpenOrAwaitingTrial() {
+        assertThat(breaker.isOpen()).isFalse();
+
+        failTimes(3);
+        assertThat(breaker.isOpen()).isTrue();
+
+        clock.advance(OPEN_DURATION);
+        assertThat(breaker.isOpen()).isTrue();
+
+        breaker.allowRequest();
+        breaker.recordSuccess();
+        assertThat(breaker.isOpen()).isFalse();
+    }
 }

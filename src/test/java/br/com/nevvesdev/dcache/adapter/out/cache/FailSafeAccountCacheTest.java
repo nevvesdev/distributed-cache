@@ -133,6 +133,17 @@ class FailSafeAccountCacheTest {
         assertThatThrownBy(() -> cache.evict(null)).isInstanceOf(InvalidValueException.class);
     }
 
+    @Test
+    void shouldExposeCircuitState() {
+        assertThat(cache.isCircuitOpen()).isFalse();
+
+        delegate.fail();
+        cache.find(AccountId.generate());
+        cache.find(AccountId.generate());
+
+        assertThat(cache.isCircuitOpen()).isTrue();
+    }
+
     private static final class ScriptedCache implements AccountCache {
 
         private final Map<AccountId, Account> entries = new HashMap<>();
