@@ -7,6 +7,8 @@ import br.com.nevvesdev.dcache.application.port.out.AccountRepository;
 import br.com.nevvesdev.dcache.application.service.EvictAccountCacheService;
 import br.com.nevvesdev.dcache.application.service.GetAccountSummaryService;
 import br.com.nevvesdev.dcache.application.service.SingleFlightAccountRepository;
+import br.com.nevvesdev.dcache.infrastructure.observability.InstrumentedAccountRepository;
+import io.micrometer.core.instrument.MeterRegistry;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -14,8 +16,10 @@ import org.springframework.context.annotation.Configuration;
 public class UseCaseConfiguration {
 
     @Bean
-    GetAccountSummaryUseCase getAccountSummaryUseCase(AccountRepository accountRepository, AccountCache accountCache) {
-        return new GetAccountSummaryService(new SingleFlightAccountRepository(accountRepository), accountCache);
+    GetAccountSummaryUseCase getAccountSummaryUseCase(
+        AccountRepository accountRepository, AccountCache accountCache, MeterRegistry meterRegistry) {
+        AccountRepository instrumented = new InstrumentedAccountRepository(accountRepository, meterRegistry);
+        return new GetAccountSummaryService(new SingleFlightAccountRepository(instrumented), accountCache);
     }
 
     @Bean
