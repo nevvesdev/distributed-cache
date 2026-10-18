@@ -9,6 +9,8 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.web.servlet.MockMvc;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import io.micrometer.core.instrument.MeterRegistry;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -39,6 +41,9 @@ class CacheOutageIntegrationTest {
     @Autowired
     private AccountJpaRepository jpaRepository;
 
+    @Autowired
+    private MeterRegistry meterRegistry;
+
     @Test
     void shouldKeepServingFromDatabaseWhileRedisIsUnavailable() throws Exception {
         UUID id = UUID.randomUUID();
@@ -63,5 +68,14 @@ class CacheOutageIntegrationTest {
         mockMvc.perform(delete("/api/v1/accounts/{accountId}/cache", UUID.randomUUID()))
             .andExpect(status().isServiceUnavailable())
             .andExpect(jsonPath("$.title").value("Cache unavailable"));
+    }
+
+    @Test
+    void shouldReportOpenCircuitThroughGauge() throws Exception {
+        for (int attempt = 0; attempt < 3; attempt++) {
+            mockMvc.perform(get(SUMMARY_URL, UUID.randomUUID())).andExpect(status().isNotFound());
+        }
+
+        assertThat(meterRegistry.get("dcache.cache.circuit.open").gauge().value()).isEqualTo(1.0);
     }
 }
