@@ -100,6 +100,22 @@ Exemplo para rodar sem cache:
 ```bash
 ./mvnw spring-boot:run -Dspring-boot.run.profiles=local -Dspring-boot.run.arguments=--dcache.cache.enabled=false
 ```
+### Observabilidade
+
+As métricas ficam em `/actuator/metrics` (e `/actuator/prometheus`).
+
+| Métrica | Descrição |
+|---|---|
+| `dcache.cache.lookups` | Acertos (`hit`) e erros (`miss`) nas leituras do cache |
+| `dcache.cache.operations` | Latência e resultado (`success`/`error`) das operações no Redis |
+| `dcache.cache.circuit.open` | `1` quando o circuit breaker do cache está aberto |
+| `dcache.repository.lookups` | Consultas ao PostgreSQL por resultado |
+
+Taxa de acerto do cache (PromQL):
+
+```
+sum(rate(dcache_cache_lookups_total{result="hit"}[5m])) / sum(rate(dcache_cache_lookups_total[5m]))
+```
 
 ### Roadmap
 - [x] Fase 0: scaffold, Redis local, CI
@@ -110,5 +126,5 @@ Exemplo para rodar sem cache:
 - [x] Fase 5: Cache-Aside com Redis
 - [x] Fase 6: TTL, invalidação e resiliência
 - [x] Fase 7: observabilidade
-- [ ] Fase 8: testes de integração (Testcontainers)
+- [x] Fase 8: testes de integração (Testcontainers)
 - [ ] Fase 9: Docker e documentação final
