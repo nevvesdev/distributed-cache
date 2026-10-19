@@ -1,0 +1,13 @@
+.git
+.github
+.idea
+*.iml
+.vscode
+target
+HELP.md
+docs
+README.md
+LICENSE
+Dockerfile
+docker-compose.yaml
+.env
