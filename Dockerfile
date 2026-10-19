@@ -1,4 +1,4 @@
-FROM eclipse-temurin:21-jdk AS builder
+FROM eclipse-temurin:24-jdk AS builder
 WORKDIR /builder
 
 COPY .mvn/ .mvn/
@@ -10,7 +10,7 @@ RUN ./mvnw -B -ntp -DskipTests package \
     && cp target/*.jar application.jar \
     && java -Djarmode=tools -jar application.jar extract --layers --destination extracted
 
-FROM eclipse-temurin:21-jre-alpine
+FROM eclipse-temurin:25-jre-alpine
 LABEL org.opencontainers.image.source="https://github.com/nevvesdev/distributed-cache"
 WORKDIR /app
 
