@@ -32,6 +32,26 @@ services:
       retries: 10
     restart: unless-stopped
 
+  app:
+    build: .
+    image: distributed-cache:local
+    container_name: distributed-cache-app
+    profiles: ["app"]
+    environment:
+      SPRING_PROFILES_ACTIVE: local
+      DB_URL: jdbc:postgresql://postgres:5432/distributed_cache
+      DB_USER: dcache
+      DB_PASSWORD: dcache
+      REDIS_HOST: redis
+    ports:
+      - "8080:8080"
+    depends_on:
+      redis:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
 volumes:
   distributed-cache-redis-data:
   distributed-cache-postgres-data:
