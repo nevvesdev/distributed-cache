@@ -26,3 +26,41 @@ jobs:
 
       - name: Build e testes
         run: ./mvnw -B -ntp verify
+
+  docker:
+    name: Imagem Docker e teste de fumaça
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Sobe a aplicação com as dependências
+        run: docker compose --profile app up -d --build
+
+      - name: Aguarda a aplicação ficar saudável
+        run: |
+          for attempt in $(seq 1 60); do
+            if curl -sf http://localhost:8080/actuator/health/liveness > /dev/null; then
+              exit 0
+            fi
+            sleep 2
+          done
+          exit 1
+
+      - name: Consulta a conta de exemplo
+        run: |
+          curl -sf http://localhost:8080/api/v1/accounts/22222222-2222-2222-2222-222222222222/summary -o response.json
+          cat response.json
+          grep -q '"usedLimit":350.75' response.json
+
+      - name: Confere as métricas de cache
+        run: curl -sf http://localhost:8080/actuator/metrics/dcache.cache.lookups
+
+      - name: Exibe os logs em caso de falha
+        if: failure()
+        run: docker compose --profile app logs
+
+      - name: Derruba o ambiente
+        if: always()
+        run: docker compose --profile app down -v
